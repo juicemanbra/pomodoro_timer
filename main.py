@@ -1,83 +1,98 @@
-import time as t 
+import time as t
 import datetime as dt
 import os
 import csv
 
+# next time:
 
-def countdown(interval, type): # this is a simple countdown that displays minutes and seconds
+# make a pause and a skip function (probably need to look into threading for that??) 
+# find out how to get rid of global variable
+
+
+# change icon of notification (prob needs modules)
+# find out how to use .aiff sounds
+
+# COMMENT AND CLEAN UP!
+
+# total tasks:
+# tkinter
+# create a GUI for the application
+# maybe its easier to implement a pause and skip button into the GUI rather than the CLI version
+# create a widget of the current state of the countdown
+
+
+
+def notifier(title, text): # this function is used to send a notification to the user
+    os.system("""
+            osascript -e 'display notification "{}" with title "{}" sound name "Glass"'
+            """.format(text, title))
+
+
+def countdown(interval, type): # with this function we print out a live countdown of the current interval
     while interval:
         mins, secs = divmod(interval, 60)
         timer = '{:02d}:{:02d}'.format(mins, secs)
         t.sleep(1)
         interval -= 1
-        print(type, timer, end='\r') # takes the type of interval (pasue/work) and the time
+        print(type, timer, end='\r')# this makes the printout live and replaces the counter with the current 
 
 
-def pause(p_length): # takes the length of the pause as parameter
-    print(f'Let\'s take a {p_length} break!')
+def pause(length): # this counts down in a pause, either short or long depending on how many intervals
+    if length == 'short': # we take here the parameter defined in the work_timer() function
+        countdown(pause_interval_s, 'Pause: ') # pause still needs a skip functiom
+        
+    else:
+        countdown(pause_interval_l, 'Pause: ')
+    notifier('Break is over!', 'Get back to work!')
+    work()
+
+
+def work(): # this is counting down when working -- still needs a pause function!
+    print('To start working, press ENTER.')
     input('')
-    if p_length == 'short':
-        countdown(pause_interval_s)
-    else: 
-        countdown(pause_interval_l)
-    
-
-def work():
-    input('')
-    global interval_count
+    print('Press ENTER to pause.')
+    global interval_count # have not found a cleaner way to use the variable within this function yet. 
     interval_count += 1
-    countdown(work_interval, 'Work')
-
+    countdown(work_interval, 'Work: ')
     if (interval_count % 4) == 0:
         p_length = 'long'
+        notifier('Pause!','Take a long break!')
     else:
         p_length = 'short'
-
-    notifier('Pause!', f'Take a {p_length} break')
+        notifier('Pause!','Take a short break!')
     pause(p_length)
 
 
-def savetoCSV(): # this functions saves some data to a csv file
+def savetoCSV(): # this function saves some data to a csv file for future reference/analysis
     fulldt = dt.datetime.now()
-    date = f"{fulldt.day}.{fulldt.month}.{fulldt.year}" # date
-    time = "{:02d}:{:02d}".format(fulldt.hour, fulldt.minute) #  current time
-    outputFile = open('log.csv', 'a', newline='')
+    date = f"{fulldt.day}.{fulldt.month}.{fulldt.year}"
+    time = "{:02d}:{:02d}".format(fulldt.hour, fulldt.minute)
+    outputFile = open('timeLog_v2.csv', 'a', newline='')
     outputWriter = csv.writer(outputFile, delimiter='\t')
-    outputWriter.writerow([date, time, task, timeFormat, interval_count, flow_scale]) # task, how many intervals and the flow experienced
-
-def start():
-    print('This is a timer for flow&productivity!)
-    task = input('Enter task:\n>')
-    print("To start the next interval hit ENTER")
+    outputWriter.writerow([date, time, task, timeFormat, interval_count, flow_scale])
 
 
-    
+task = input("Enter task\n") # here we let the user tell us what he's working on
+print("To stop working, press Ctrl-C.")
+print("To start next interval hit ENTER.")
 
+work_interval = 25 * 60 # time spent working (minutes times seconds)
+pause_interval_s = 5 * 60 # time for short pause
+pause_interval_l = 20 * 60 # time for long pause
+interval_count = 0 # start count of the total intervals
+startTime = t.time() # this captures the time, when the user starts the clock
 
-def notifier(title, text):
-        os.system("""
-                osascript -e 'display notification "{}" with title "{}" sound name "Glass"'
-                """.format(text, title))
-    
-
-
-
-work_interval = 5 # seconds times minutes
-pause_interval_s = 2 # short pause
-pause_interval_l = 3 # long pause (after 4 intervals)
-interval_count = 0
-startTime = t.time() # the time we started working
-
-
-start()
-
-try:
+try: # this creates an infinite loop and lets the user end it with ctrl-C
     work()
 except KeyboardInterrupt:
-    endTime = t.time() # here we capture the time when the user ends the program with ctrl-C
-    totalTime = int(endTime - startTime) # this calculates the time between start and end
-    mins, secs = divmod(totalTime, 60)   # this makes the time human readable
-    timeFormat = "{:02d}:{:02d}".format(mins, secs)  # this makes the time human readable
-    print(f"\nWell Done!\nTotal Time: {timeFormat} Intervals: {interval_count}") # this could be a notification in the future
-    flow = input("Flow experienced: ")
-    savetoCSV()
+        endTime = t.time() # here we capture the time when the user ends the program with ctrl-C
+        totalTime = int(endTime - startTime) # this calculates the time between start and end
+        mins, secs = divmod(totalTime, 60)   # this makes the time human readable
+        timeFormat = "{:02d}:{:02d}".format(mins, secs)  # this makes the time human readable
+        print(f"\nWell Done!\nTotal Time: {timeFormat} Intervals: {interval_count}") # this could be a notification in the future
+        print("Flow experienced:")
+        flow_scale = input("") 
+        savetoCSV() 
+        
+
+
