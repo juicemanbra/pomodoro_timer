@@ -3,23 +3,6 @@ import datetime as dt
 import os
 import csv
 
-# next time:
-
-# make a pause and a skip function (probably need to look into threading for that??) 
-# find out how to get rid of global variable
-
-
-# change icon of notification (prob needs modules)
-# find out how to use .aiff sounds
-
-# COMMENT AND CLEAN UP!
-
-# total tasks:
-# tkinter
-# create a GUI for the application
-# maybe its easier to implement a pause and skip button into the GUI rather than the CLI version
-# create a widget of the current state of the countdown
-
 
 
 def notifier(title, text): # this function is used to send a notification to the user
